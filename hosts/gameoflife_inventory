@@ -1,0 +1,20 @@
+[gameoflife-proj:children]
+gameoflife
+
+[gameoflife-proj:vars]
+user=venkat
+application_var=gameoflife
+app_dir_base=/home/venkat
+jenkins_base="http://34.93.148.93:8080/job/"
+jenkins_user=admin
+jenkins_pass=admin
+java=jdk64-1.8.0_212
+
+[gameoflife]
+#10.160.0.3
+34.93.118.105 
+
+[gameoflife:vars]
+jenkins_jobname="{{ jenkins_base }}/Gameoflife_PR_Validation/"
+artifact_name=gameoflife
+app_dir="{{ app_dir_base }}/citools/Gameoflife"

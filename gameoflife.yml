@@ -1,0 +1,8 @@
+- name: deploy all
+  become: true
+  become_method: sudo
+  become_user: "venkat"
+  hosts: all
+  serial: 1
+  roles:
+    - gameoflife-deploy

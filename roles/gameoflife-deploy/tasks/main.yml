@@ -1,0 +1,55 @@
+---
+- name: create ci-tools directory
+  file: path="{{ app_dir_base }}/citools" state=directory recurse=yes mode=0755 owner="{{user}}"
+
+- name: setup .profile
+  template: src=dot_profile dest="{{ app_dir_base }}/.profile"
+
+- name: execute .profile
+  command: sh .profile chdir="{{ app_dir_base }}/"
+
+- name: create app directory
+  file: path={{ app_dir }} state=directory recurse=yes mode=0755 owner="{{user}}"
+
+- name: stop the tomcatservice
+  command: sh shutdown.sh chdir="{{ app_dir }}/apache-tomcat-8.5.42/webapps/bin"
+  ignore_errors: True
+
+- name: copying the tomcat
+  copy: src=apache-tomcat-8.5.42.tar.gz dest="{{ app_dir }}/" mode=0755
+ 
+-  unarchive:
+    src: "{{ app_dir }}/apache-tomcat-8.5.42.tar.gz"
+    dest: "{{ app_dir }}"
+    copy: no
+
+- name: stop the tomcatservice
+  command: sh shutdown.sh chdir="{{ app_dir }}/apache-tomcat-8.5.42/webapps/bin"
+  ignore_errors: True
+
+- name: triggerjenkinsjob.sh script
+  copy: src=trigger_jenkins.sh dest="{{ app_dir }}/apache-tomcat-8.5.42/webapps/" mode=0755
+
+- name: Downloading the gameoflife.war file 
+  tags: start
+  command: sh trigger_jenkins.sh {{ jenkins_user }} {{ jenkins_pass }} {{ jenkins_jobname }} {{ artifact_name }} chdir="{{ app_dir }}/apache-tomcat-8.5.42/webapps/" mode=0755
+
+- name: delete trigger_jenkins.sh
+  file:
+    path: "{{ app_dir }}/apache-tomcat-8.5.42/webapps/trigger_jenkins.sh"
+    state: absent
+
+- name: delete apache-tomcat-8.5.42.tar.gz
+  file:
+    path: "{{ app_dir }}/apache-tomcat-8.5.42.tar.gz"
+    state: absent
+
+- name: startup.sh
+  tags: start
+  copy: src=startup.sh dest="{{ app_dir }}/apache-tomcat-8.5.42/bin/" mode=0755
+
+- name: execute startup.sh
+  #  local_action: command sh chdir="{{ app_dir }}/apache-tomcat-8.5.42/bin/startup.sh"
+  command: nohup sh /home/venkat/citools/Gameoflife/apache-tomcat-8.5.42/bin/startup.sh &
+
+
